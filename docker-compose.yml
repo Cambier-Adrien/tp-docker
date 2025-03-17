@@ -39,12 +39,14 @@ services:
     image: node:18
     container_name: angular_frontend
     restart: always
+    depends_on:
+      - express
     ports:
       - "4200:4200"
     working_dir: /app
     volumes:
       - ./angular:/app
-    command: bash -c "npm install && npm start -- --host 0.0.0.0 --disable-host-check"
+    command: bash -c "npm install && npm start -- --host 0.0.0.0"
     networks:
       - app-network
 
