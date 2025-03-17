@@ -1,0 +1,5 @@
+# Ignorer le répertoire mysqldata à la racine
+/mysql_data/
+
+# Ignorer tous les répertoires node_modules
+node_modules/
