@@ -1,0 +1,314 @@
+<div class="min-h-screen bg-black p-5">
+  <!-- Header -->
+  <header class="max-w-5xl mx-auto mb-12">
+    <div class="flex justify-between items-center">
+      <h1 class="text-2xl font-bold">{{ title }}</h1>
+      <div class="flex gap-4">
+        <button (click)="logout()" class="secondary-btn">
+          <svg
+            class="h-4 w-4"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+            />
+          </svg>
+          Déconnexion
+        </button>
+        <button (click)="openModal('create')" class="primary-btn">
+          <svg
+            class="h-4 w-4"
+            stroke-width="1.5"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            color="#000000"
+          >
+            <path
+              d="M6 12H12M18 12H12M12 12V6M12 12V18"
+              stroke="#000000"
+              stroke-width="1.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            ></path>
+          </svg>
+          Nouveau produit
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Products list -->
+  <div *ngIf="!isLoading" class="max-w-5xl mx-auto">
+    <!-- Empty state -->
+    <div
+      *ngIf="products.length === 0"
+      class="py-20 gap-4 flex flex-col items-center justify-center border border-neutral-800 rounded-lg"
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        class="h-16 w-16 text-neutral-400 mb-4"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="1"
+          d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
+        />
+      </svg>
+      <p class="text-xl text-neutral-400">Aucun produit trouvé</p>
+      <button (click)="openModal('create')" class="secondary-btn">
+        Ajouter un premier produit
+      </button>
+    </div>
+
+    <!-- Products table -->
+    <div
+      *ngIf="products.length > 0"
+      class="border border-neutral-800 rounded-md"
+    >
+      <table class="w-full">
+        <thead class="border-b border-neutral-800">
+          <tr>
+            <th class="px-6 py-4 text-left dark-text">Nom</th>
+            <th class="px-6 py-4 text-left dark-text">Prix</th>
+            <th class="px-6 py-4 text-left dark-text">Date de création</th>
+            <th class="px-6 py-4 text-right dark-text">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-neutral-800">
+          <tr
+            *ngFor="let product of products"
+            (click)="openModal('view', product)"
+            class="cursor-pointer"
+          >
+            <td class="px-6 py-4 whitespace-nowrap">
+              <span class="font-medium text-sm">{{ product.name }}</span>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <span class="dark-text">
+                {{ product.price | currency : "EUR" }}
+              </span>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <span
+                class="rounded-full px-4 py-1 bg-amber-900/50 text-amber-500 text-sm"
+              >
+                {{ product.created_at | date : "dd/MM/yyyy" }}
+              </span>
+            </td>
+            <td
+              class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium relative"
+            >
+              <button
+                (click)="toggleDropdown($event, product.id)"
+                class="text-neutral-400 hover:text-neutral-200 cursor-pointer hover:bg-neutral-900 rounded-md transition-all ease-in-out p-1"
+                [class.bg-neutral-900]="activeDropdown === product.id"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  fill="currentColor"
+                  class="text-neutral-400"
+                  viewBox="0 0 16 16"
+                >
+                  <circle cx="8" cy="4" r="1.3" />
+                  <circle cx="8" cy="8" r="1.3" />
+                  <circle cx="8" cy="12" r="1.3" />
+                </svg>
+              </button>
+
+              <!-- Menu déroulant -->
+              <div
+                *ngIf="activeDropdown === product.id"
+                (click)="stopPropagation($event)"
+                class="absolute right-3 mt-1 w-48 rounded-lg shadow-lg bg-neutral-950 border border-neutral-800 ring-1 ring-black ring-opacity-5 z-50"
+              >
+                <div class="p-2" role="menu" aria-orientation="vertical">
+                  <button
+                    (click)="
+                      openModal('edit', product); $event.stopPropagation()
+                    "
+                    class="w-full text-left block px-4 py-2 text-sm text-white hover:bg-neutral-900 transition-colors rounded-md cursor-pointer"
+                    role="menuitem"
+                  >
+                    <div class="flex items-center text-sm">
+                      <svg
+                        class="mr-2 h-4 w-4 text-neutral-400"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                        />
+                      </svg>
+                      Modifier
+                    </div>
+                  </button>
+                  <button
+                    (click)="deleteProduct(product.id!, $event)"
+                    class="w-full text-left block px-4 py-2 text-sm text-white hover:bg-neutral-900 transition-colors rounded-md cursor-pointer"
+                    role="menuitem"
+                  >
+                    <div class="flex items-center text-sm text-red-500">
+                      <svg
+                        class="mr-2 h-4 w-4"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m5-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                        />
+                      </svg>
+                      Supprimer
+                    </div>
+                  </button>
+                </div>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Modal -->
+  <div
+    *ngIf="isModalOpen && currentProduct"
+    class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 backdrop-blur-[2px]"
+  >
+    <div
+      class="bg-neutral-950 border border-neutral-800 rounded-lg shadow-xl max-w-2xl w-full mx-4 transform transition-all overflow-hidden"
+      [ngClass]="{
+        'scale-100 opacity-100': isModalOpen,
+        'scale-95 opacity-0': !isModalOpen
+      }"
+    >
+      <!-- Modal Header -->
+      <div
+        class="flex justify-between items-center border-b border-neutral-800 p-5 bg-black rounded-t-lg"
+      >
+        <h3 class="text-xl font-medium">
+          {{
+            modalMode === "create"
+              ? "Nouveau Produit"
+              : modalMode === "edit"
+              ? "Modifier Produit"
+              : "Détails du Produit"
+          }}
+        </h3>
+        <button
+          (click)="closeModal()"
+          class="text-neutral-400 hover:text-neutral-200 cursor-pointer hover:bg-neutral-900 rounded-md transition-all ease-in-out p-1"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            height="22"
+            width="22"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M6 18L18 6M6 6l12 12"
+            />
+          </svg>
+        </button>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="p-5">
+        <form *ngIf="modalMode === 'create' || modalMode === 'edit'">
+          <div class="mb-4">
+            <label class="block dark-text mb-2">Nom</label>
+            <input
+              [(ngModel)]="currentProduct.name"
+              name="name"
+              type="text"
+              placeholder="Nom du produit"
+            />
+          </div>
+          <div class="mb-4">
+            <label class="block dark-text mb-2">Prix</label>
+            <input
+              [(ngModel)]="currentProduct.price"
+              name="price"
+              type="number"
+              placeholder="0.00"
+            />
+          </div>
+          <div class="mb-4">
+            <label class="block dark-text mb-2">Description</label>
+            <textarea
+              [(ngModel)]="currentProduct.description"
+              name="description"
+              rows="4"
+              placeholder="Description du produit"
+            ></textarea>
+          </div>
+        </form>
+
+        <!-- View mode -->
+        <div *ngIf="modalMode === 'view'" class="space-y-6">
+          <div>
+            <h4 class="block dark-text mb-2">Nom</h4>
+            <p class="text-sm">{{ currentProduct.name }}</p>
+          </div>
+          <div>
+            <h4 class="block dark-text mb-2">Prix</h4>
+            <p class="text-sm">{{ currentProduct.price | currency : "EUR" }}</p>
+          </div>
+          <div>
+            <h4 class="block dark-text mb-2">Description</h4>
+            <p class="text-sm">{{ currentProduct.description }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="flex justify-between border-t border-neutral-800 p-5">
+        <button (click)="closeModal()" class="secondary-btn">
+          {{ modalMode === "view" ? "Fermer" : "Annuler" }}
+        </button>
+
+        <ng-container *ngIf="modalMode === 'view'">
+          <button
+            (click)="openModal('edit', currentProduct)"
+            class="primary-btn"
+          >
+            Modifier
+          </button>
+        </ng-container>
+
+        <ng-container *ngIf="modalMode === 'create' || modalMode === 'edit'">
+          <button (click)="saveProduct()" class="primary-btn">
+            {{ modalMode === "create" ? "Créer" : "Sauvegarder" }}
+          </button>
+        </ng-container>
+      </div>
+    </div>
+  </div>
+</div>
